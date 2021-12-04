@@ -11,3 +11,5 @@ The blink project can act as a template for new projects.
 * cd build
 * cmake ..
 * make
+
+That's all, folks!
