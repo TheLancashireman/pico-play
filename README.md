@@ -1,6 +1,6 @@
 # pico-playground
 
-Some example projects for the raspberry pi pico.
+I bought a Raspberry Pi Pico board. These are my first simple projects for it.
 
 The blink project can act as a template for new projects.
 
