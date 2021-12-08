@@ -5,7 +5,9 @@
 This subdirectory contains some code that I hacked together to learn about the RP2040 processor
 and the Raspberry Pi Pico development board.
 
-It's just the basic stuff one might need to get started on a simple bare-metal project:
+The aim of the game is to prepare the way for porting davroska to the pico.
+
+Just the basic stuff one might need to get started on a simple bare-metal project:
 
 * Load code directly into RAM via the onboard UF2 loader.
 * Set the GPIO to blink the onboard LED.
