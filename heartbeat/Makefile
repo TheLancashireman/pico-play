@@ -17,11 +17,12 @@
 #  You should have received a copy of the GNU General Public License
 #  along with the pico playground.  If not, see <http://www.gnu.org/licenses/>.
 
-DV_GNU_D	?= /data1/gnu/gcc-linaro-7.5.0-2019.12-x86_64_arm-eabi
+# Use the installed ARM gcc
+DV_GNU_D	?= /usr
 
-DV_GCC		?= $(DV_GNU_D)/bin/arm-eabi-gcc
-DV_LD		?= $(DV_GNU_D)/bin/arm-eabi-ld
-DV_OBJCOPY	?= $(DV_GNU_D)/bin/arm-eabi-objcopy
+DV_GCC		?= $(DV_GNU_D)/bin/arm-none-eabi-gcc
+DV_LD		?= $(DV_GNU_D)/bin/arm-none-eabi-ld
+DV_OBJCOPY	?= $(DV_GNU_D)/bin/arm-none-eabi-objcopy
 
 DV_BIN_D	= bin
 DV_OBJ_D	= obj
@@ -35,6 +36,7 @@ CC_OPT		+= -mcpu=cortex-m3
 
 CC_OPT		+= -O2
 CC_OPT		+= -g
+CC_OPT		+= -fno-lto
 
 LD_OPT		+= -e $(DV_ENTRY)
 LD_OPT		+= -T $(DV_LDSCRIPT)
@@ -42,10 +44,10 @@ LD_OPT		+= -T $(DV_LDSCRIPT)
 VPATH		+= .
 
 # The demo code
-#DV_LD_OBJS	+= $(DV_OBJ_D)/dv-cortexm-vectors.o
+DV_LD_OBJS	+= $(DV_OBJ_D)/boot.o
 DV_LD_OBJS	+= $(DV_OBJ_D)/vectors.o
 DV_LD_OBJS	+= $(DV_OBJ_D)/play.o
-#DV_LD_OBJS	+= $(DV_OBJ_D)/leds.o
+DV_LD_OBJS	+= $(DV_OBJ_D)/leds.o
 DV_LD_OBJS	+= $(DV_OBJ_D)/systick.o
 DV_LD_OBJS	+= $(DV_OBJ_D)/pico-uart.o
 DV_LD_OBJS	+= $(DV_OBJ_D)/nvic.o

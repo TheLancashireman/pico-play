@@ -22,13 +22,15 @@
 #include "pico-uart.h"
 #include "nvic.h"
 
-/* Let's have something in .data and .bss to check that the linker script is working
+/* Linker script symbols
+*/
+extern unsigned dv_start_data, dv_end_data, dv_start_bss, dv_end_bss, dv_idata;
+
+/* Let's have something in .data to check that the linker script is working
 */
 volatile unsigned char floom = 42u;
 
 volatile int delay_factor;
-
-extern unsigned dv_start_data, dv_end_data, dv_start_bss, dv_end_bss, dv_idata;
 
 void pass(void);
 void fail(void);
@@ -56,9 +58,9 @@ void dv_reset(void)
 	else
 		fail();
 
-#if 0
 	dv_nvic_init();
 
+#if 0
 	if ( dv_uart1_init(115200, "8N1") != 0 )
 		fail();
 
@@ -99,6 +101,7 @@ void fail(void)
 */
 void dv_init_data(void)
 {
+#if 0	/* Not needed - bootloader loads data directly in place */
 	unsigned *s = &dv_idata;
 	unsigned *d = &dv_start_data;
 
@@ -106,11 +109,12 @@ void dv_init_data(void)
 	{
 		*d++ = *s++;
 	}
+#endif
 
-	d = &dv_start_bss;
-	while ( d < &dv_end_bss )
+	unsigned *b = &dv_start_bss;
+	while ( b < &dv_end_bss )
 	{
-		*d++ = 0x00;
+		*b++ = 0x00;
 	}
 }
 

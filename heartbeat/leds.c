@@ -2,29 +2,28 @@
  *
  *  Copyright David Haworth
  *
- *  This file is part of the STM32 playground.
+ *  This file is part of the pico playground.
  *
- *  The STM32 playground is free software: you can redistribute it and/or modify
+ *  The pico playground is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
  *  the Free Software Foundation, either version 3 of the License, or
  *  (at your option) any later version.
  *
- *  The STM32 playground is distributed in the hope that it will be useful,
+ *  The pico playground is distributed in the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU General Public License for more details.
  *
  *  You should have received a copy of the GNU General Public License
- *  along with the STM32 playground.  If not, see <http://www.gnu.org/licenses/>.
+ *  along with the pico playground.  If not, see <http://www.gnu.org/licenses/>.
 */
-#include "stm32.h"
-#include "stm32-gpio.h"
-#include "stm32-rcc.h"
-#include "cortex-m3.h"
-#include "stm32-uart.h"
+#include "pico.h"
+#include "pico-gpio.h"
+#include "cortex-m.h"
+#include "pico-uart.h"
 #include "nvic.h"
 
-#define USE_SYSTICK		1
+#define USE_SYSTICK		0
 
 extern volatile int delay_factor;
 
@@ -35,21 +34,30 @@ void led_on(void);
 void led_off(void);
 void delay(int);
 
-#define PIN	13
+/* Onboard LED is attached to GPIO 25
+*/
+#define PIN	25
+#define PINMASK		(0x1 << PIN)
 
 void init_led(void)
 {
-	/* Turn on GPIO C
+	/* Release the reset on IO_BANK0 and wait till ready.
 	*/
-	dv_rcc.apb2en |= DV_RCC_IOPC;
+	dv_pico_resets_w1c.reset = DV_RESETS_io_bank0;
+	do {	/* Wait	*/	} while ( (dv_pico_resets.done & DV_RESETS_io_bank0) == 0 );
 
-	/* Select output/open drain/50 MHz
+	/* Disable the SIO output and turn off.
 	*/
-	int cr = PIN / 8;
-	int shift = (PIN % 8) * 4;
-	dv_u32_t mask = 0xf << shift;
-	dv_u32_t val = DV_GPIO_OUT_OD_50 << shift;
-	dv_gpio_c.cr[cr] = (dv_gpio_c.cr[cr] & mask) | val;
+	dv_pico_sio.gpio_oe.w1c = PINMASK;
+	dv_pico_sio.gpio_out.w1c = PINMASK;
+
+	/* Select SIO function for the pin.
+	*/
+	dv_pico_iobank0.gpio[PIN].ctrl = DV_FUNCSEL_SIO;
+
+	/* Enable the SIO output
+	*/
+	dv_pico_sio.gpio_oe.w1s = PINMASK;
 
 #if USE_SYSTICK
 	dv_init_systick();
@@ -58,16 +66,17 @@ void init_led(void)
 
 void led_off(void)
 {
-	dv_gpio_c.bsrr = 0x1 << PIN;
+	dv_pico_sio.gpio_out.w1c = PINMASK;
 }
 
 void led_on(void)
 {
-	dv_gpio_c.brr = 0x1 << PIN;
+	dv_pico_sio.gpio_out.w1s = PINMASK;
 }
 
 void play_putc(int c)
 {
+#if 0
 	dv_uart1_putc(c);
 
 	if ( c == '\n' )
@@ -85,9 +94,9 @@ void play_putc(int c)
 			char_count = 0;
 		}
 	}
+#endif
 }
 	
-
 void delay(int ms)
 {
 #if USE_SYSTICK
