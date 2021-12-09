@@ -16,8 +16,6 @@ Just the basic stuff one might need to get started on a simple bare-metal projec
 * Use the uart to communicate with the outside world.
 * Basic interrupt handling using a software trigger.
 
-Read the file called notes for details.
-
 Getting the code out of the flash and into the RAM is an exercise for later, as is the execute-in-place
 mode.
 
