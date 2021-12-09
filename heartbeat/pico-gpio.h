@@ -93,7 +93,7 @@ typedef struct dv_pico_io_intctl_s
 typedef struct dv_pico_iobank0_s
 {
 	dv_pico_gpio_sc_t	gpio[30];			/* 0x000 - GPIO 0..29 control and status */
-	dv_pico_gpio_sc_t	gap[2];				/* Space where GPIO 30..31 should be ;-) */
+	dv_pico_gpio_sc_t	gap[2];				/* Special space where GPIO 30..31 were left out ;-) */
 	volatile dv_u32_t	intr[4];			/* 0x0f0 - raw interrupt status */
 	dv_pico_io_intctl_t	proc_intctl[2];		/* 0x100 - interrupt control for each core */
 	dv_pico_io_intctl_t	dormant_wake;		/* 0x160 - interrupt control for dormant wake */
