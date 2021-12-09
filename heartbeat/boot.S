@@ -17,11 +17,11 @@
  *  You should have received a copy of the GNU General Public License
  *  along with the pico playground.  If not, see <http://www.gnu.org/licenses/>.
 */
-	.cpu cortex-m0
-	.thumb
 	.extern		dv_stacktop
 	.extern		dv_reset
+	.globl		dv_boot
 
+dv_boot:
     ldr		r0,=dv_stacktop
     mov		sp,r0
     bl		dv_reset

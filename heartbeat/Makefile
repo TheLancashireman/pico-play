@@ -27,18 +27,18 @@ DV_OBJCOPY	?= $(DV_GNU_D)/bin/arm-none-eabi-objcopy
 DV_BIN_D	= bin
 DV_OBJ_D	= obj
 
-DV_ENTRY	?= dv_reset
+DV_ENTRY	?= dv_boot
 DV_LDSCRIPT	?= pico.ldscript
 
 CC_OPT		+= -Wall
 CC_OPT		+= -fno-common
-CC_OPT		+= -mcpu=cortex-m3
+CC_OPT		+= -mcpu=cortex-m0plus
+CC_OPT		+= -mthumb
 
 CC_OPT		+= -O2
 CC_OPT		+= -g
-CC_OPT		+= -fno-lto
 
-LD_OPT		+= -e $(DV_ENTRY)
+LD_OPT		+= --thumb-entry=$(DV_ENTRY)
 LD_OPT		+= -T $(DV_LDSCRIPT)
 
 VPATH		+= .
@@ -54,7 +54,7 @@ DV_LD_OBJS	+= $(DV_OBJ_D)/nvic.o
 
 .PHONY:		default all help clean install srec binary
 
-default:	binary
+default:	all
 
 clean:
 	-rm -rf $(DV_OBJ_D) $(DV_BIN_D)
@@ -82,9 +82,9 @@ install:	all
 	$(DV_OBJCOPY) bin/play.elf -O binary $(INSTALL_DIR)/kernel.img
 
 srec:		all
-	$(DV_OBJCOPY) bin/play.elf -O srec --srec-forceS3 /dev/stdout | dos2unix | egrep -v '^S3..........00*..$$' > bin/play.srec
+	$(DV_OBJCOPY) bin/play.elf -O srec --srec-forceS3 /dev/stdout | dos2unix | egrep -v '^S3..........00*..$$' > $(DV_BIN_D)/play.srec
 
 binary:		play.bin
 
 play.bin:	all
-	$(DV_OBJCOPY) bin/play.elf -O binary play.bin
+	$(DV_OBJCOPY) bin/play.elf -O binary $(DV_BIN_D)/play.bin

@@ -23,8 +23,11 @@
 #include "nvic.h"
 
 /* Linker script symbols
+ *
+ * The volatile qualifier here and in the pointers inhibits the gcc "optimisation" that replaces the
+ * initialisation loop with a call to memset.
 */
-extern unsigned dv_start_data, dv_end_data, dv_start_bss, dv_end_bss, dv_idata;
+extern volatile unsigned dv_start_data, dv_end_data, dv_start_bss, dv_end_bss, dv_idata;
 
 /* Let's have something in .data to check that the linker script is working
 */
@@ -102,8 +105,8 @@ void fail(void)
 void dv_init_data(void)
 {
 #if 0	/* Not needed - bootloader loads data directly in place */
-	unsigned *s = &dv_idata;
-	unsigned *d = &dv_start_data;
+	volatile unsigned *s = &dv_idata;
+	volatile unsigned *d = &dv_start_data;
 
 	while ( d < &dv_end_data )
 	{
@@ -111,7 +114,7 @@ void dv_init_data(void)
 	}
 #endif
 
-	unsigned *b = &dv_start_bss;
+	volatile unsigned *b = &dv_start_bss;
 	while ( b < &dv_end_bss )
 	{
 		*b++ = 0x00;

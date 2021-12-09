@@ -1,40 +1,33 @@
 /*  Memory layout:
  *
- *  The Blue Pill board (STM32F103C8T6) has 128 KiB flash at 0x08000000 and 20 KiB ram at 0x20000000
+ *  The RP2040 has 256 KiB RAM located at 0x20000000. The RAM is arranged in four banks, and the
+ *	image at this address is "striped" (i.e. address xx0 is in bank 0, address xx4 is in bank 1,
+ *	address xx8 is in bank 2 and address xxc is in bank 3.
  *
- *  The boot vector consists of:
- *		- the initial stack pointer
- *		- the starting address
- *
- *  In order to boot correctly from flash, the boot vector must be at 0x08000000. This when the board is
- *  configured to boot from flash, this block of memory gets aliased to 0 (the reset value of the vector base
- *  address register) so it makes sense to put the whole vector table at 0x08000000.
- *
- *	An interesting consequence of the M3's boot vector is that you don't need to write any assembly
- *	language code for startup. On most microcontrollers you have to initialise the stack pointer at the
- *	very least.
+ *	In the initial examples we'll use the boot loader to load the program directly into RAM. This means
+ *	need an entry point at the start that initializes the stack pointer
  *
  *  Copyright David Haworth
  *
- *  This file is part of the STM32 playground.
+ *  This file is part of the pico playground.
  *
- *  The STM32 playground is free software: you can redistribute it and/or modify
+ *  The pico playground is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
  *  the Free Software Foundation, either version 3 of the License, or
  *  (at your option) any later version.
  *
- *  The STM32 playground is distributed in the hope that it will be useful,
+ *  The pico playground is distributed in the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU General Public License for more details.
  *
  *  You should have received a copy of the GNU General Public License
- *  along with the STM32 playground.  If not, see <http://www.gnu.org/licenses/>.
+ *  along with the pico playground.  If not, see <http://www.gnu.org/licenses/>.
 */
 
 MEMORY
 {
-	ram		(rw)	: org = 0x20000000, len = 0x40000	/* 256 MiB */
+	ram		(rw)	: org = 0x20000000, len = 0x40000	/* 256 KiB */
 }
 
 SECTIONS

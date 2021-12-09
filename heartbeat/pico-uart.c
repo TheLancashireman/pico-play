@@ -17,7 +17,7 @@
  *  You should have received a copy of the GNU General Public License
  *  along with the pico playground.  If not, see <http://www.gnu.org/licenses/>.
 */
-#if 0
+#if 0		/* This is the stm32 polled uart driver. TODO: rewrite for Rp2040 */
 #include "pico.h"
 #include "pico-uart.h"
 #include "pico-gpio.h"
