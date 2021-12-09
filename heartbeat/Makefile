@@ -24,6 +24,8 @@ DV_GCC		?= $(DV_GNU_D)/bin/arm-none-eabi-gcc
 DV_LD		?= $(DV_GNU_D)/bin/arm-none-eabi-ld
 DV_OBJCOPY	?= $(DV_GNU_D)/bin/arm-none-eabi-objcopy
 
+DV_ELF2UF2	?=	elf2uf2
+
 DV_BIN_D	= bin
 DV_OBJ_D	= obj
 
@@ -54,7 +56,7 @@ DV_LD_OBJS	+= $(DV_OBJ_D)/nvic.o
 
 .PHONY:		default all help clean install srec binary
 
-default:	all
+default:	uf2
 
 clean:
 	-rm -rf $(DV_OBJ_D) $(DV_BIN_D)
@@ -62,6 +64,12 @@ clean:
 all:		$(DV_OBJ_D) $(DV_BIN_D) elf
 
 elf:		$(DV_BIN_D)/play.elf
+
+srec:		$(DV_BIN_D)/play.srec
+
+binary:		$(DV_BIN_D)/play.bin
+
+uf2:		$(DV_BIN_D)/play.uf2
 
 $(DV_BIN_D)/play.elf:	$(DV_LD_OBJS) $(DV_LDSCRIPT)
 	$(DV_LD) -o $@ $(DV_LD_OBJS) $(LD_LIB) $(LD_OPT)
@@ -79,12 +87,14 @@ $(DV_OBJ_D):
 	mkdir -p obj
 
 install:	all
-	$(DV_OBJCOPY) bin/play.elf -O binary $(INSTALL_DIR)/kernel.img
+	$(DV_OBJCOPY) $(DV_BIN_D)/play.elf -O binary $(INSTALL_DIR)/kernel.img
 
-srec:		all
-	$(DV_OBJCOPY) bin/play.elf -O srec --srec-forceS3 /dev/stdout | dos2unix | egrep -v '^S3..........00*..$$' > $(DV_BIN_D)/play.srec
+$(DV_BIN_D)/play.srec:	all
+	$(DV_OBJCOPY) $(DV_BIN_D)/play.elf -O srec --srec-forceS3 /dev/stdout | dos2unix | \
+		egrep -v '^S3..........00*..$$' > $(DV_BIN_D)/play.srec
 
-binary:		play.bin
+$(DV_BIN_D)/play.bin:	all
+	$(DV_OBJCOPY) $(DV_BIN_D)/play.elf -O binary $(DV_BIN_D)/play.bin
 
-play.bin:	all
-	$(DV_OBJCOPY) bin/play.elf -O binary $(DV_BIN_D)/play.bin
+$(DV_BIN_D)/play.uf2:	all
+	$(DV_ELF2UF2) -v $(DV_BIN_D)/play.elf $(DV_BIN_D)/play.uf2

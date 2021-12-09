@@ -19,7 +19,27 @@ Just the basic stuff one might need to get started on a simple bare-metal projec
 Getting the code out of the flash and into the RAM is an exercise for later, as is the execute-in-place
 mode.
 
-## License, disclaimer etc.
+# WARNING
+
+The enclosed shell script, to-pico.sh, copies the UF2 file to the pico. To do that, it tries to
+mount /dev/sdc1 at /media/pico. It requires supervisor rights (sudo) in order to do that.
+You may have to enter your password to obtain those rights.
+
+Ensure that you read and understand the script before using it.
+
+# Development history
+
+## Initial version
+
+Copied from STM32 playground and bigly hacked. Heartbeat is a double pulse with a frequency of
+nominally 75 beats per minute. No PLL initialisation, uses software timing loopsfor delays.
+The loop in the delay() function is six instructions. The delay factor of 800 means that 4800 instructions
+are executed every millisecond - which suggests a CPU clock frequency of about 5 MHz, which is
+compatible with the range of frequencies given for the ring oscillator (see RP2040 refman 2.15.2.1)
+
+
+
+# License, disclaimer etc.
 
 Copyright David Haworth
 
