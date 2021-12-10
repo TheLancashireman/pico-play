@@ -44,6 +44,7 @@ void led_on(void);
 void led_off(void);
 void delay(int);
 void dv_init_clock();
+void dv_init_pll();
 void play_putc(int);
 void dv_irq_ext0(void);
 void putstr(char *);
@@ -54,6 +55,9 @@ void dv_reset(void)
 {
 #if 1
 	dv_init_clock();
+#if 1
+	dv_init_pll();
+#endif
 #endif
 	dv_init_data();
 
@@ -141,6 +145,41 @@ void putstr(char *s)
 	{
 		play_putc(*s++);
 	}
+}
+
+#define MY_REFDIV		1
+#define MY_FBDIV		133
+#define MY_POSTDIV1		6
+#define MY_POSTDIV2		2
+
+void dv_init_pll(void)
+{
+	/* Check if PLL is already correctly configured and running
+	*/
+	if ( (dv_pico_pll.cs & DV_PLL_LOCK) != 0 &&
+		 (dv_pico_pll.cs & DV_PLL_REFDIV) == MY_REFDIV &&
+		 (dv_pico_pll.fbdiv_int & DV_PLL_FBDIV) == MY_FBDIV &&
+		 (dv_pico_pll.prim & (DV_PLL_POSTDIV1 | DV_PLL_POSTDIV2)) == ((MY_POSTDIV1 << 16) | (MY_POSTDIV2 << 12)) )
+		return;
+
+	/* Apply the reset on PLL, then remove it and wait until ready
+	*/
+	dv_pico_resets_w1s.reset = DV_RESETS_pll_sys;
+	dv_pico_resets_w1c.reset = DV_RESETS_pll_sys;
+	do {	/* Wait	*/	} while ( (dv_pico_resets.done & DV_RESETS_pll_sys) == 0 );
+
+	/* Load the VCO-related dividers
+	*/
+	dv_pico_pll.cs = MY_REFDIV;
+	dv_pico_pll.fbdiv_int = MY_FBDIV;
+
+	/* Power on the PLL
+	*/
+	dv_pico_pll_w1c.pwr = DV_PLL_VCOPD | DV_PLL_PD;
+
+	/* Wait for the PLL to lock
+	*/
+	do {	/* Wait */	} while ( (dv_pico_pll.cs & DV_PLL_LOCK) == 0 );
 }
 
 void dv_irq_ext0(void)

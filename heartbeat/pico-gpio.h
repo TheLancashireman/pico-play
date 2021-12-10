@@ -20,6 +20,9 @@
 #ifndef PICO_GPIO_H
 #define PICO_GPIO_H
 
+/* The name of this file is becoming increasingly incorrect ;-)
+*/
+
 #include "pico.h"
 
 /* The peripherals have "mirror" addresses that allow atomic access
@@ -179,6 +182,49 @@ typedef struct dv_pico_xosc_s
 #define DV_XOSC_STABLE		0x80000000
 #define DV_XOSC_BADWRITE	0x01000000
 #define DV_XOSC_ENABLED		0x00001000
+
+/* PLL
+ * The sys PLL can be used to drive the cores. For full speed we need to wind it up to 133 MHz
+ *
+ * From the block diagram and description in refman 2.18:
+ *	REFDIV = 1 because FREF is 12 MHz.
+ *	VCO output must be in range 400..1600 MHz. The higher the frequency, the less jitter there is.
+ *	FBDIV must be in the range 16..320. This is actually the multiplication factor.
+ *
+ * So if we choose FBDIV = 133, we have a VCO output frequeny of 1596, which is in range (just!)
+ * Then we need to divide by 12 by setting POSTDIV1 to 6 and POSTDIV2 to 2
+*/
+#define DV_PLL_SYS_BASE		0x40028000
+#define DV_PLL_USB_BASE		0x4002c000
+
+typedef struct dv_pico_pll_s
+{
+	volatile dv_u32_t	cs;			/* 0x00 - control and status */
+	volatile dv_u32_t	pwr;		/* 0x04 - controls power modes */
+	volatile dv_u32_t	fbdiv_int;	/* 0x08 - feedback divisor */
+	volatile dv_u32_t	prim;		/* 0x0c - controls PLL post dividers */
+} dv_pico_pll_t;
+
+#define dv_pico_pll			(((dv_pico_pll_t *)(DV_PLL_SYS_BASE))[0])
+#define dv_pico_pll_xor		(((dv_pico_pll_t *)(DV_PLL_SYS_BASE+DV_OFFSET_XOR))[0])
+#define dv_pico_pll_w1s		(((dv_pico_pll_t *)(DV_PLL_SYS_BASE+DV_OFFSET_W1S))[0])
+#define dv_pico_pll_w1c		(((dv_pico_pll_t *)(DV_PLL_SYS_BASE+DV_OFFSET_W1C))[0])
+
+#define dv_pico_usbpll		(((dv_pico_pll_t *)(DV_PLL_USB_BASE))[0])
+#define dv_pico_usbpll_xor	(((dv_pico_pll_t *)(DV_PLL_USB_BASE+DV_OFFSET_XOR))[0])
+#define dv_pico_usbpll_w1s	(((dv_pico_pll_t *)(DV_PLL_USB_BASE+DV_OFFSET_W1S))[0])
+#define dv_pico_usbpll_w1c	(((dv_pico_pll_t *)(DV_PLL_USB_BASE+DV_OFFSET_W1C))[0])
+
+#define DV_PLL_LOCK			0x80000000	/* CS */
+#define DV_PLL_BYPASS		0x00000100	/* CS */
+#define DV_PLL_REFDIV		0x0000003f	/* CS */
+#define DV_PLL_VCOPD		0x00000020	/* PWR */
+#define DV_PLL_POSTDIVPD	0x00000008	/* PWR */
+#define DV_PLL_DSMPD		0x00000004	/* PWR */
+#define DV_PLL_PD			0x00000001	/* PWR */
+#define DV_PLL_FBDIV		0x00000fff	/* FBDIV_INT */
+#define DV_PLL_POSTDIV1		0x00070000	/* PRIM */
+#define DV_PLL_POSTDIV2		0x00007000	/* PRIM */
 
 /* Single-cycle I/O block.
 */
