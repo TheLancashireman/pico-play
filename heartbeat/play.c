@@ -23,6 +23,8 @@
 #include "pico-uart.h"
 #include "nvic.h"
 
+#define USE_PLL		1
+
 /* Linker script symbols
  *
  * The volatile qualifier here and in the pointers inhibits the gcc "optimisation" that replaces the
@@ -55,7 +57,7 @@ void dv_reset(void)
 {
 #if 1
 	dv_init_clock();
-#if 1
+#if USE_PLL
 	dv_init_pll();
 #endif
 #endif
@@ -78,7 +80,11 @@ void dv_reset(void)
 
 	init_led();
 	led_off();
+#if USE_PLL
+	delay_factor = 16000;
+#else
 	delay_factor = 800;
+#endif
 
 	for (;;)
 	{
@@ -189,6 +195,11 @@ void dv_init_pll(void)
 	/* Power on the post-dividers
 	*/
 	dv_pico_pll_w1c.pwr = DV_PLL_POSTDIVPD;
+
+	/* Switch the sys clock to the PLL
+	*/
+	dv_pico_clocks.sys.ctrl = DV_CLKSRC_SYS_REF | DV_CLKSRC_SYS_AUX_PLL;	/* Should be this already */
+	dv_pico_clocks.sys.ctrl = DV_CLKSRC_SYS_AUX | DV_CLKSRC_SYS_AUX_PLL;	/* Switch to the aux clock */
 }
 
 void dv_irq_ext0(void)

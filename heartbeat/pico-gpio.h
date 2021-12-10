@@ -156,6 +156,10 @@ typedef struct dv_pico_clocks_s
 #define DV_CLKSRC_REF_XOSC		0x02
 #define DV_CLKSRC_SYS_REF		0x00
 #define DV_CLKSRC_SYS_AUX		0x01
+#define DV_CLKSRC_SYS_AUX_PLL	0x00
+#define DV_CLKSRC_SYS_AUX_UPLL	0x20
+#define DV_CLKSRC_SYS_AUX_ROSC	0x40
+#define DV_CLKSRC_SYS_AUX_XOSC	0x60
 
 /* Xosc
 */
