@@ -23,7 +23,7 @@
 #include "pico-uart.h"
 #include "nvic.h"
 
-#define USE_SYSTICK		0
+#define USE_SYSTICK		1
 
 extern volatile int delay_factor;
 
@@ -100,8 +100,8 @@ void play_putc(int c)
 void delay(int ms)
 {
 #if USE_SYSTICK
-	/* Ext. clock is 72 MHz / 8 = 9 MHz ==> 9000000 ticks per second ==> 9000 ticks per millisecond */
-	dv_u32_t count = ms * 9000;
+	/* Ext. clock is 1 MHz ==> 1000000 ticks per second ==> 1000 ticks per millisecond */
+	dv_u32_t count = ms * 1000;
 	dv_u32_t old = dv_read_systick();
 	dv_u32_t diff = 0;
 	dv_u32_t new = 0;
@@ -113,6 +113,7 @@ void delay(int ms)
 		diff = (old - new) & DV_SYST_MASK;	/* Down counter! */
 		old = new;
 
+#if 0
 		if ( dv_uart1_isrx() )
 		{
 			int c = dv_uart1_getc();
@@ -121,6 +122,7 @@ void delay(int ms)
 			if ( c == '!' )
 				dv_nvic_triggerirq(0);
 		}
+#endif
 	}
 
 #else	/* Timing loop version calibrated (approximately) for 8 MHz CPU clock */

@@ -34,7 +34,7 @@ You can find all the stages in the git history.
 ## 1st iteration
 
 Copied from STM32 playground and bigly hacked. Heartbeat is a double pulse with a frequency of
-nominally 75 beats per minute. No PLL initialisation, uses software timing loops for delays.
+nominally 72 beats per minute. No PLL initialisation, uses software timing loops for delays.
 The loop in the delay() function is six instructions. The delay factor of 800 means that 4800 instructions
 are executed every millisecond - which suggests a CPU clock frequency of about 5 MHz. That is
 compatible with the range of frequencies given for the ring oscillator (see RP2040 refman 2.15.2.1)
@@ -48,7 +48,10 @@ Enable the crystal oscillator and use it for the cores. Now runs at 12 MHz - abo
 Enable and configure the PLL for 133 MHz operation. Increase the delay_factor to slow down the blink rate
 to approximately the speed it was in the 1st iteration.
 
+## 4th iteration
 
+Switch to using systick as timer. The "implementation-defined" clock frequency is 1 MHz, according to the
+ref. manual. Beat rate is now a reasonably accurate 72 beats per minute.
 
 # License, disclaimer etc.
 
