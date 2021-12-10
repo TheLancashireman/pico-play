@@ -151,6 +151,7 @@ void putstr(char *s)
 #define MY_FBDIV		133
 #define MY_POSTDIV1		6
 #define MY_POSTDIV2		2
+#define MY_POSTDIVS		((MY_POSTDIV1 << 16) | (MY_POSTDIV2 << 12))
 
 void dv_init_pll(void)
 {
@@ -159,7 +160,7 @@ void dv_init_pll(void)
 	if ( (dv_pico_pll.cs & DV_PLL_LOCK) != 0 &&
 		 (dv_pico_pll.cs & DV_PLL_REFDIV) == MY_REFDIV &&
 		 (dv_pico_pll.fbdiv_int & DV_PLL_FBDIV) == MY_FBDIV &&
-		 (dv_pico_pll.prim & (DV_PLL_POSTDIV1 | DV_PLL_POSTDIV2)) == ((MY_POSTDIV1 << 16) | (MY_POSTDIV2 << 12)) )
+		 (dv_pico_pll.prim & (DV_PLL_POSTDIV1 | DV_PLL_POSTDIV2)) == MY_POSTDIVS )
 		return;
 
 	/* Apply the reset on PLL, then remove it and wait until ready
@@ -180,6 +181,14 @@ void dv_init_pll(void)
 	/* Wait for the PLL to lock
 	*/
 	do {	/* Wait */	} while ( (dv_pico_pll.cs & DV_PLL_LOCK) == 0 );
+
+	/* Configure the post-dividers
+	*/
+	dv_pico_pll.prim = MY_POSTDIVS;
+
+	/* Power on the post-dividers
+	*/
+	dv_pico_pll_w1c.pwr = DV_PLL_POSTDIVPD;
 }
 
 void dv_irq_ext0(void)
