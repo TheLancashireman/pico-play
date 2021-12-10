@@ -29,6 +29,8 @@ Ensure that you read and understand the script before using it.
 
 # Development history
 
+You can find all the stages in the git history.
+
 ## 1st iteration
 
 Copied from STM32 playground and bigly hacked. Heartbeat is a double pulse with a frequency of
@@ -43,7 +45,8 @@ Enable the crystal oscillator and use it for the cores. Now runs at 12 MHz - abo
 
 ## 3rd iteration
 
-Enable and configure the PLL for 133 MHz operation.
+Enable and configure the PLL for 133 MHz operation. Increase the delay_factor to slow down the blink rate
+to approximately the speed it was in the 1st iteration.
 
 
 
