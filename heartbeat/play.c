@@ -19,6 +19,7 @@
 */
 #include "pico.h"
 #include "cortex-m.h"
+#include "pico-gpio.h"
 #include "pico-uart.h"
 #include "nvic.h"
 
@@ -42,7 +43,7 @@ void init_led(void);
 void led_on(void);
 void led_off(void);
 void delay(int);
-void dv_init_rcc();
+void dv_init_clock();
 void play_putc(int);
 void dv_irq_ext0(void);
 void putstr(char *);
@@ -51,8 +52,8 @@ void putstr(char *);
 */
 void dv_reset(void)
 {
-#if 0
-	dv_init_rcc();
+#if 1
+	dv_init_clock();
 #endif
 	dv_init_data();
 
@@ -119,6 +120,19 @@ void dv_init_data(void)
 	{
 		*b++ = 0x00;
 	}
+}
+
+void dv_init_clock(void)
+{
+	dv_pico_clocks.sys_resus_ctrl = 0x00;				/* Disable resuscitation for now */
+
+	dv_pico_xosc.ctrl = DV_XOSC_1_15_MHZ;				/* Should be fixed according to datasheet, but is R/W */
+	dv_pico_xosc.startup = ((12000000/1000)+255)/256;	/* 1 ms at 12 MHz, rounded up */
+	dv_pico_xosc_w1s.ctrl = DV_XOSC_ENABLE;
+	do {	/* Wait */	} while ( (dv_pico_xosc.status & DV_XOSC_STABLE) == 0 );
+
+	dv_pico_clocks.ref.ctrl = DV_CLKSRC_REF_XOSC;		/* Select XOSC as the reference clock source */
+	dv_pico_clocks.sys.ctrl = DV_CLKSRC_SYS_REF;		/* Select REF as the system clock source */
 }
 
 void putstr(char *s)

@@ -104,6 +104,81 @@ typedef struct dv_pico_iobank0_s
 #define dv_pico_iobank0_w1s	(((dv_pico_iobank0_t *)(DV_IOBANK0_BASE+DV_OFFSET_W1S))[0])
 #define dv_pico_iobank0_w1c	(((dv_pico_iobank0_t *)(DV_IOBANK0_BASE+DV_OFFSET_W1C))[0])
 
+/* Clocks
+*/
+#define DV_CLOCKS_BASE	0x40008000
+
+typedef struct dv_pico_clkblk_s
+{
+	volatile dv_u32_t ctrl;
+	volatile dv_u32_t div;
+	volatile dv_u32_t selected;
+} dv_pico_clkblk_t;
+
+typedef struct dv_pico_clocks_s
+{
+	dv_pico_clkblk_t	gpout[4];			/* 0x00/0x0c/0x18/0x24 */
+	dv_pico_clkblk_t	ref;				/* 0x30 - */
+	dv_pico_clkblk_t	sys;				/* 0x3c - */
+	dv_pico_clkblk_t	peri;				/* 0x48 - no DIV in this block? */
+	dv_pico_clkblk_t	usb;				/* 0x54 - */
+	dv_pico_clkblk_t	adc;				/* 0x60 - */
+	dv_pico_clkblk_t	rtc;				/* 0x6c - */
+	volatile dv_u32_t	sys_resus_ctrl;		/* 0x74 - */
+	volatile dv_u32_t	sys_resus_status;	/* 0x7c - */
+	volatile dv_u32_t	fc0_ref_khz;		/* 0x80 - */
+	volatile dv_u32_t	fc0_min_khz;		/* 0x84 - */
+	volatile dv_u32_t	fc0_max_khz;		/* 0x88 - */
+	volatile dv_u32_t	fc0_delay;			/* 0x8c - */
+	volatile dv_u32_t	fc0_interval;		/* 0x90 - */
+	volatile dv_u32_t	fc0_src;			/* 0x94 - */
+	volatile dv_u32_t	fc0_status;			/* 0x98 - */
+	volatile dv_u32_t	fc0_result;			/* 0x9c - */
+	volatile dv_u32_t	wake_en[2];			/* 0xa0 - */
+	volatile dv_u32_t	sleep_en[2];		/* 0xa8 - */
+	volatile dv_u32_t	enabled[2];			/* 0xb0 - */
+	volatile dv_u32_t	intr;				/* 0xb8 - */
+	volatile dv_u32_t	inte;				/* 0xbc - */
+	volatile dv_u32_t	intf;				/* 0xc0 - */
+	volatile dv_u32_t	ints;				/* 0xc4 - */
+} dv_pico_clocks_t;
+
+#define dv_pico_clocks		(((dv_pico_clocks_t *)(DV_CLOCKS_BASE))[0])
+#define dv_pico_clocks_xor	(((dv_pico_clocks_t *)(DV_CLOCKS_BASE+DV_OFFSET_XOR))[0])
+#define dv_pico_clocks_w1s	(((dv_pico_clocks_t *)(DV_CLOCKS_BASE+DV_OFFSET_W1S))[0])
+#define dv_pico_clocks_w1c	(((dv_pico_clocks_t *)(DV_CLOCKS_BASE+DV_OFFSET_W1C))[0])
+
+#define DV_CLKSRC_REF_ROSC		0x00
+#define DV_CLKSRC_REF_AUX		0x01
+#define DV_CLKSRC_REF_XOSC		0x02
+#define DV_CLKSRC_SYS_REF		0x00
+#define DV_CLKSRC_SYS_AUX		0x01
+
+/* Xosc
+*/
+#define DV_XOSC_BASE			0x40024000
+
+typedef struct dv_pico_xosc_s
+{
+	volatile dv_u32_t	ctrl;
+	volatile dv_u32_t	status;
+	volatile dv_u32_t	dormant;
+	volatile dv_u32_t	startup;
+	volatile dv_u32_t	count;
+} dv_pico_xosc_t;
+
+#define dv_pico_xosc		(((dv_pico_xosc_t *)(DV_XOSC_BASE))[0])
+#define dv_pico_xosc_xor	(((dv_pico_xosc_t *)(DV_XOSC_BASE+DV_OFFSET_XOR))[0])
+#define dv_pico_xosc_w1s	(((dv_pico_xosc_t *)(DV_XOSC_BASE+DV_OFFSET_W1S))[0])
+#define dv_pico_xosc_w1c	(((dv_pico_xosc_t *)(DV_XOSC_BASE+DV_OFFSET_W1C))[0])
+
+#define DV_XOSC_1_15_MHZ	0x00000aa0
+#define DV_XOSC_ENABLE		0x00fab000
+#define DV_XOSC_DISABLE		0x00d1e000
+#define DV_XOSC_STARTUP_X4	0x00100000
+#define DV_XOSC_STABLE		0x80000000
+#define DV_XOSC_BADWRITE	0x01000000
+#define DV_XOSC_ENABLED		0x00001000
 
 /* Single-cycle I/O block.
 */
