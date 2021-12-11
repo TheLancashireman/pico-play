@@ -76,11 +76,11 @@ void led_on(void)
 
 void play_putc(int c)
 {
-	dv_uart1_putc(c);
+	dv_uart0_putc(c);
 
 	if ( c == '\n' )
 	{
-		dv_uart1_putc('\r');
+		dv_uart0_putc('\r');
 		char_count = 0;
 	}
 	else
@@ -88,8 +88,8 @@ void play_putc(int c)
 		char_count++;
 		if ( char_count >= 64 )
 		{
-			dv_uart1_putc('\r');
-			dv_uart1_putc('\n');
+			dv_uart0_putc('\r');
+			dv_uart0_putc('\n');
 			char_count = 0;
 		}
 	}
@@ -111,9 +111,9 @@ void delay(int ms)
 		diff = (old - new) & DV_SYST_MASK;	/* Down counter! */
 		old = new;
 
-		if ( dv_uart1_isrx() )
+		if ( dv_uart0_isrx() )
 		{
-			int c = dv_uart1_getc();
+			int c = dv_uart0_getc();
 			play_putc(c);
 
 #if 0

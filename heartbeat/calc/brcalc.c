@@ -25,7 +25,7 @@ int main(int argc, char** argv)
 
 		if ( v <= 0 || v > 2147483647 )
 		{
-			printf("%ld  Invalid!\n", v);
+			printf("\t{\t%ld,\t0,\t0\t},\t\t// Invalid!\n", v);
 			continue;
 		}
 
@@ -37,11 +37,11 @@ int main(int argc, char** argv)
 
 		if ( ibrd == 0 || ibrd > 65535 )
 		{
-			printf("%8u  %5u  %2u/64  Invalid!\n", baud, ibrd, fbrd);
+			printf("\t{\t%u,\t%u,\t%u\t}\t\t// Invalid!\n", baud, ibrd, fbrd);
 		}
 		else
 		{
-			printf("%8u  %5u  %2u/64\n", baud, ibrd, fbrd);
+			printf("\t{\t%u,\t%u,\t%u\t},\n", baud, ibrd, fbrd);
 		}
 	}
 

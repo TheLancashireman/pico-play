@@ -70,7 +70,7 @@ void dv_reset(void)
 
 	dv_nvic_init();
 
-	if ( dv_uart1_init(115200, "8N1") != 0 )
+	if ( dv_uart0_init(115200, "8N1") != 0 )
 		fail();
 
 #if 0
@@ -85,6 +85,17 @@ void dv_reset(void)
 #else
 	delay_factor = 800;
 #endif
+
+	if ( floom != 66 )
+	{
+		for (;;)
+		{
+			led_on();
+			delay(500);
+			led_off();
+			delay(500);
+		}
+	}
 
 	for (;;)
 	{
@@ -144,7 +155,7 @@ void dv_init_clock(void)
 	dv_pico_clocks.ref.ctrl = DV_CLKSRC_REF_XOSC;		/* Select XOSC as the reference clock source */
 	dv_pico_clocks.sys.ctrl = DV_CLKSRC_SYS_REF;		/* Select REF as the system clock source */
 
-	dv_pico_clocks.peri.ctrl = DV_CLK_ENABLE | DV_CLKSRC_PERI_SYS;		/* Select sys clk as peripheral clock */
+	dv_pico_clocks.peri.ctrl = DV_CLK_ENABLE | DV_CLKSRC_PERI_XOSC;		/* Select xosc as peripheral clock */
 }
 
 void putstr(char *s)

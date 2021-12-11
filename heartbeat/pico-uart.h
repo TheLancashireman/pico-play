@@ -98,22 +98,22 @@ typedef struct dv_pico_uart_s
 #define DV_UART_SIREN		0x0002		/* IrDA */
 #define DV_UART_UARTEN		0x0001		/* UART enable */
 
-/* dv_uart1_isrx() - returns true if there's a character to read.
+/* dv_uart0_isrx() - returns true if there's a character to read.
 */
-static inline int dv_uart1_isrx(void)
+static inline int dv_uart0_isrx(void)
 {
-	return ( (dv_pico_uart1.fr & DV_UART_RXFE) == 0 );
+	return ( (dv_pico_uart0.fr & DV_UART_RXFE) == 0 );
 }
 
-/* dv_uart1_istx() - returns true if there's room to send a character
+/* dv_uart0_istx() - returns true if there's room to send a character
 */
-static inline int dv_uart1_istx(void)
+static inline int dv_uart0_istx(void)
 {
-	return ( (dv_pico_uart1.fr & DV_UART_TXFF) == 0 );
+	return ( (dv_pico_uart0.fr & DV_UART_TXFF) == 0 );
 }
 
-extern int dv_uart1_getc(void);
-extern void dv_uart1_putc(int);
-extern int dv_uart1_init(unsigned baud, char *format);
+extern int dv_uart0_getc(void);
+extern void dv_uart0_putc(int);
+extern int dv_uart0_init(unsigned baud, char *format);
 
 #endif

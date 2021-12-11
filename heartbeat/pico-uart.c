@@ -21,29 +21,29 @@
 #include "pico-uart.h"
 #include "pico-gpio.h"
 
-/* dv_uart1_getc() - wait until there's a character available then return it.
+/* dv_uart0_getc() - wait until there's a character available then return it.
 */
-int dv_uart1_getc(void)
+int dv_uart0_getc(void)
 {
-	while ( !dv_uart1_isrx() )
+	while ( !dv_uart0_isrx() )
 	{
 	}
 
-	return (int)(dv_pico_uart1.dr & DV_UART_DATA);	/* Discard the error status bits */
+	return (int)(dv_pico_uart0.dr & DV_UART_DATA);	/* Discard the error status bits */
 }
 
-/* dv_uart1_putc() - wait until there's room in the tx buffer, then put a character into it.
+/* dv_uart0_putc() - wait until there's room in the tx buffer, then put a character into it.
 */
-void dv_uart1_putc(int c)
+void dv_uart0_putc(int c)
 {
-	while ( !dv_uart1_istx() )
+	while ( !dv_uart0_istx() )
 	{
 	}
 
-	dv_pico_uart1.dr = (dv_u32_t)c;
+	dv_pico_uart0.dr = (dv_u32_t)c;
 }
 
-/* dv_uart1_init() - initialise uart1 for normal async use. Return 0 if OK.
+/* dv_uart0_init() - initialise uart0 for normal async use. Return 0 if OK.
  *
  * Returns nonzero if the parameters aren't supported.
  *
@@ -58,7 +58,7 @@ void dv_uart1_putc(int c)
  * There doesn't appear to be a usable libgcc.a with the devuan compiler.
  * Instead of calculating ibrd and fbrd we use a table lookup
 */
-#define NBAUD	13	/* Set to 0 to use the calculation method */
+#define NBAUD	14	/* Set to 0 to use the calculation method */
 
 #if NBAUD != 0
 typedef struct
@@ -68,9 +68,27 @@ typedef struct
 } br_lookup_t;
 static const br_lookup_t br_table[NBAUD] =
 {
+#if 1	// 12 MHz
+	{	256000,	2,		60	},
+	{	128000,	5,		55	},
+	{	115200,	6,		33	},
+	{	57600,	13,		1	},
+	{	38400,	19,		34	},
+	{	19200,	39,		4	},
+	{	14400,	52,		5	},
+	{	9600,	78,		8	},
+	{	4800,	156,	16	},
+	{	2400,	312,	32	},
+	{	1200,	625,	0	},
+	{	600,	1250,	0	},
+	{	300,	2500,	0	},
+	{	31250,	24,		0	}
+#endif
+#if 0	// 133 MHz
 	{	256000,	32,		30	},
 	{	128000,	64,		60	},
 	{	115200,	72,		10	},
+	{	57600,	144,	20	},
 	{	38400,	216,	30	},
 	{	19200,	432,	60	},
 	{	14400,	577,	16	},
@@ -81,10 +99,11 @@ static const br_lookup_t br_table[NBAUD] =
 	{	600,	13854,	11	},
 	{	300,	27708,	21	},
 	{	31250,	266,	0	}
+#endif
 };
 #endif
 
-int dv_uart1_init(unsigned baud, char *fmt)
+int dv_uart0_init(unsigned baud, char *fmt)
 {
 #if NBAUD == 0
 	/* Calculate the integer and fractional dividers. See rp2040 refman 4.2.7.1
@@ -100,6 +119,7 @@ int dv_uart1_init(unsigned baud, char *fmt)
 
 	dv_u32_t fbrd = ((bdiv & 0x7f) + 1) / 2;
 #else
+#if 0
 	int bri;
 	for ( bri = 0; bri < NBAUD; bri++ )
 	{
@@ -112,6 +132,10 @@ int dv_uart1_init(unsigned baud, char *fmt)
 
 	dv_u32_t ibrd = br_table[bri].ibrd;
 	dv_u32_t fbrd = br_table[bri].fbrd;
+#else
+	dv_u32_t ibrd = 6;
+	dv_u32_t fbrd = 33;
+#endif
 #endif
 
 	if ( fmt[0] < '5' || fmt[0] > '8' )
@@ -163,30 +187,30 @@ int dv_uart1_init(unsigned baud, char *fmt)
 	/* Parameters are OK.
 	*/
 
-	/* Release the reset on UART1 and wait till ready.
+	/* Release the reset on UART0 and wait till ready.
 	*/
-	dv_pico_resets_w1c.reset = DV_RESETS_uart1;
-	do {	/* Wait	*/	} while ( (dv_pico_resets.done & DV_RESETS_uart1) == 0 );
-
-	/* Set up the I/O function for UART1
-	 * GPIO 4 = UART1 tx
-	 * GPIO 5 = UART1 rx
-	*/
-	dv_pico_iobank0.gpio[4].ctrl = DV_FUNCSEL_UART;
-	dv_pico_iobank0.gpio[5].ctrl = DV_FUNCSEL_UART;
+	dv_pico_resets_w1c.reset = DV_RESETS_uart0;
+	do {	/* Wait	*/	} while ( (dv_pico_resets.done & DV_RESETS_uart0) == 0 );
 
 	/* Set up the baud-rate generator. This requires a write to LCR_H to activate; we do that later
 	*/
-	dv_pico_uart1.ibrd = ibrd;
-	dv_pico_uart1.fbrd = fbrd;
+	dv_pico_uart0.ibrd = ibrd;
+	dv_pico_uart0.fbrd = fbrd;
 
 	/* Write the line config to LCR_H
 	*/
-	dv_pico_uart1.lcr_h = lcr;
+	dv_pico_uart0.lcr_h = lcr;
 
 	/* Enable the UART, enable rx and tx. Turn off all flow control etc.
 	*/
-	dv_pico_uart1.cr = DV_UART_UARTEN | DV_UART_RXE | DV_UART_TXE;
+	dv_pico_uart0.cr = DV_UART_UARTEN | DV_UART_RXE | DV_UART_TXE;
+
+	/* Set up the I/O function for UART0
+	 * GPIO 0 = UART0 tx
+	 * GPIO 1 = UART0 rx
+	*/
+	dv_pico_iobank0.gpio[0].ctrl = DV_FUNCSEL_UART;
+	dv_pico_iobank0.gpio[1].ctrl = DV_FUNCSEL_UART;
 
 	return 0;
 }
