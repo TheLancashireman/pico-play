@@ -70,10 +70,10 @@ void dv_reset(void)
 
 	dv_nvic_init();
 
-#if 0
 	if ( dv_uart1_init(115200, "8N1") != 0 )
 		fail();
 
+#if 0
 	dv_nvic_setprio(0, 12);
 	dv_nvic_enableirq(0);
 #endif
@@ -143,6 +143,8 @@ void dv_init_clock(void)
 
 	dv_pico_clocks.ref.ctrl = DV_CLKSRC_REF_XOSC;		/* Select XOSC as the reference clock source */
 	dv_pico_clocks.sys.ctrl = DV_CLKSRC_SYS_REF;		/* Select REF as the system clock source */
+
+	dv_pico_clocks.peri.ctrl = DV_CLK_ENABLE | DV_CLKSRC_PERI_SYS;		/* Select sys clk as peripheral clock */
 }
 
 void putstr(char *s)

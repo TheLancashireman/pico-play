@@ -76,7 +76,6 @@ void led_on(void)
 
 void play_putc(int c)
 {
-#if 0
 	dv_uart1_putc(c);
 
 	if ( c == '\n' )
@@ -94,9 +93,8 @@ void play_putc(int c)
 			char_count = 0;
 		}
 	}
-#endif
 }
-	
+
 void delay(int ms)
 {
 #if USE_SYSTICK
@@ -113,16 +111,16 @@ void delay(int ms)
 		diff = (old - new) & DV_SYST_MASK;	/* Down counter! */
 		old = new;
 
-#if 0
 		if ( dv_uart1_isrx() )
 		{
 			int c = dv_uart1_getc();
 			play_putc(c);
 
+#if 0
 			if ( c == '!' )
 				dv_nvic_triggerirq(0);
-		}
 #endif
+		}
 	}
 
 #else	/* Timing loop version calibrated (approximately) for 8 MHz CPU clock */

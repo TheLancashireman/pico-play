@@ -33,4 +33,10 @@ typedef volatile dv_u32_t dv_reg32_t;
 */
 #define DV_NVIC_NIRQ	32
 
+/* The peripherals have "mirror" addresses that allow atomic access
+*/
+#define	DV_OFFSET_XOR	0x1000		/* XOR (i.e. toggle) */
+#define	DV_OFFSET_W1S	0x2000		/* Write 1 to set */
+#define	DV_OFFSET_W1C	0x3000		/* Write 1 to clear */
+
 #endif

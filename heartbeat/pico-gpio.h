@@ -20,16 +20,10 @@
 #ifndef PICO_GPIO_H
 #define PICO_GPIO_H
 
-/* The name of this file is becoming increasingly incorrect ;-)
+/* The name of this file is becoming increasingly inaccurate ;-)
 */
 
 #include "pico.h"
-
-/* The peripherals have "mirror" addresses that allow atomic access
-*/
-#define	DV_OFFSET_XOR	0x1000		/* XOR (i.e. toggle) */
-#define	DV_OFFSET_W1S	0x2000		/* Write 1 to set */
-#define	DV_OFFSET_W1C	0x3000		/* Write 1 to clear */
 
 /* The resets registers control the power to the peripherals.
  * A peripheral whose reset bit is 1 is held in reset.
@@ -151,6 +145,9 @@ typedef struct dv_pico_clocks_s
 #define dv_pico_clocks_w1s	(((dv_pico_clocks_t *)(DV_CLOCKS_BASE+DV_OFFSET_W1S))[0])
 #define dv_pico_clocks_w1c	(((dv_pico_clocks_t *)(DV_CLOCKS_BASE+DV_OFFSET_W1C))[0])
 
+#define DV_CLK_ENABLE	0x00000800
+#define DV_CLK_KILL		0x00000400
+
 #define DV_CLKSRC_REF_ROSC		0x00
 #define DV_CLKSRC_REF_AUX		0x01
 #define DV_CLKSRC_REF_XOSC		0x02
@@ -160,6 +157,11 @@ typedef struct dv_pico_clocks_s
 #define DV_CLKSRC_SYS_AUX_UPLL	0x20
 #define DV_CLKSRC_SYS_AUX_ROSC	0x40
 #define DV_CLKSRC_SYS_AUX_XOSC	0x60
+#define DV_CLKSRC_PERI_SYS		0x00
+#define DV_CLKSRC_PERI_PLL		0x20
+#define DV_CLKSRC_PERI_UPLL		0x40
+#define DV_CLKSRC_PERI_ROSC		0x60
+#define DV_CLKSRC_PERI_XOSC		0x80
 
 /* Xosc
 */

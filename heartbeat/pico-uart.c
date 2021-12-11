@@ -17,7 +17,6 @@
  *  You should have received a copy of the GNU General Public License
  *  along with the pico playground.  If not, see <http://www.gnu.org/licenses/>.
 */
-#if 0		/* This is the stm32 polled uart driver. TODO: rewrite for Rp2040 */
 #include "pico.h"
 #include "pico-uart.h"
 #include "pico-gpio.h"
@@ -30,7 +29,7 @@ int dv_uart1_getc(void)
 	{
 	}
 
-	return dv_uart1.dr;
+	return (int)(dv_pico_uart1.dr & DV_UART_DATA);	/* Discard the error status bits */
 }
 
 /* dv_uart1_putc() - wait until there's room in the tx buffer, then put a character into it.
@@ -41,141 +40,153 @@ void dv_uart1_putc(int c)
 	{
 	}
 
-	dv_uart1.dr = (dv_u32_t)c;
+	dv_pico_uart1.dr = (dv_u32_t)c;
 }
 
 /* dv_uart1_init() - initialise uart1 for normal async use. Return 0 if OK.
  *
  * Returns nonzero if the parameters aren't supported.
  *
- * Assumes CPU clock of 72 MHz
+ * Assumes peripheral clock of 133 MHz
  *
- * TODO: perhaps a table lookup would be better than a load of if/else.
+ * fmt has 3 characters:  nps (any extra characters are ignored)
+ *	n = no of bits (5..8)
+ *	p = parity: N (none), E (even), O (odd), M (mark), S (space)
+ *	s = no of stop bits (1..2)
+ *
+ * To calculate the baud-rate dividers we need a __aeabi_uidiv functions from libgcc.a
+ * There doesn't appear to be a usable libgcc.a with the devuan compiler.
+ * Instead of calculating ibrd and fbrd we use a table lookup
 */
+#define NBAUD	13	/* Set to 0 to use the calculation method */
 
-#define FRAC_0_5	0x8
-#define FRAC_0_25	0x4
-#define FRAC_0_125	0x2
-#define FRAC_0_0625	0x1
-
-#define MAKE_FRAC(w,f)	((dv_u32_t)((w)*16+(f)))
+#if NBAUD != 0
+typedef struct
+{	dv_u32_t baud;
+	dv_u16_t ibrd;
+	dv_u16_t fbrd;
+} br_lookup_t;
+static const br_lookup_t br_table[NBAUD] =
+{
+	{	256000,	32,		30	},
+	{	128000,	64,		60	},
+	{	115200,	72,		10	},
+	{	38400,	216,	30	},
+	{	19200,	432,	60	},
+	{	14400,	577,	16	},
+	{	9600,	865,	57	},
+	{	4800,	1731,	49	},
+	{	2400,	3463,	35	},
+	{	1200,	6927,	5	},
+	{	600,	13854,	11	},
+	{	300,	27708,	21	},
+	{	31250,	266,	0	}
+};
+#endif
 
 int dv_uart1_init(unsigned baud, char *fmt)
 {
-	dv_u32_t div;
-	char bits;
-
-	/* See table 192 in STM ref manual
+#if NBAUD == 0
+	/* Calculate the integer and fractional dividers. See rp2040 refman 4.2.7.1
+	 * Differences: we treat 65535 as in-range. There's nothing in the refman to suggest otherwise.
+	 * If the calculated divisors are out of range, we return an error and don't configure the UART
 	*/
-	switch ( baud )
+	dv_u32_t bdiv = (8 * 133000000)/baud;
+	dv_u32_t ibrd = bdiv >> 7;
+	if ( ibrd == 0 || ibrd > 65535 )
 	{
-	case 115200:		/* 39.0625 */
-		div = MAKE_FRAC(39, FRAC_0_0625);
-		break;
-
-	/* Todo: other baud rates */
-		
-	default:
 		return 1;
 	}
 
-	if ( fmt[0] == '7' || fmt[0] == '8' || fmt[0] == '9' )
+	dv_u32_t fbrd = ((bdiv & 0x7f) + 1) / 2;
+#else
+	int bri;
+	for ( bri = 0; bri < NBAUD; bri++ )
 	{
-		bits = fmt[0] - '0';
+		if ( br_table[bri].baud == baud )
+			break;
 	}
-	else
+
+	if ( bri >= NBAUD )
+		return 1;
+
+	dv_u32_t ibrd = br_table[bri].ibrd;
+	dv_u32_t fbrd = br_table[bri].fbrd;
+#endif
+
+	if ( fmt[0] < '5' || fmt[0] > '8' )
+	{
 		return 2;
+	}
 
-	if ( fmt[1] == 'N' )
+	dv_u32_t lcr = (dv_u32_t)(fmt[0] - '5') << 5;	/* WLEN */
+	lcr |= DV_UART_FEN;								/* Enable FIFO */
+
+	switch ( fmt[1] )
 	{
-		/* OK */
-	}
-	else
-	if ( fmt[1] == 'E' || fmt[1] == 'O' )
-	{
-		bits++;
-	}
-	else
+	case 'N':
+		break;	/* Nothing to set */
+
+	case 'E':
+		lcr |= DV_UART_PEN | DV_UART_EPS;
+		break; 
+
+	case 'O':
+		lcr |= DV_UART_PEN;
+		break; 
+
+	case 'M':
+		lcr |= DV_UART_PEN | DV_UART_SPS;
+		break; 
+
+	case 'S':
+		lcr |= DV_UART_PEN | DV_UART_SPS | DV_UART_EPS;
+		break; 
+
+	default:
 		return 3;
-
-	if ( fmt[2] == '1' || fmt[2] == '2' )
-	{
-		/* OK */
 	}
-	else
-		return 4;
 
-	if ( bits < 8 || bits > 9 )
-		return 5;
+	switch ( fmt[2] )
+	{
+	case '1':
+		break;
+
+	case '2':
+		lcr |= DV_UART_STP2;
+		break;
+
+	default:
+		return 4;
+	}
 
 	/* Parameters are OK.
 	*/
 
-	/* Turn on GPIO A and USART1
+	/* Release the reset on UART1 and wait till ready.
 	*/
-	dv_rcc.apb2en |= (DV_RCC_IOPA | DV_RCC_USART1);
+	dv_pico_resets_w1c.reset = DV_RESETS_uart1;
+	do {	/* Wait	*/	} while ( (dv_pico_resets.done & DV_RESETS_uart1) == 0 );
 
-	/* Turn on GPIO A and enable alt functions. Assumes no remapping i.e. Tx on PA9, Rx on PA10
+	/* Set up the I/O function for UART1
+	 * GPIO 4 = UART1 tx
+	 * GPIO 5 = UART1 rx
 	*/
+	dv_pico_iobank0.gpio[4].ctrl = DV_FUNCSEL_UART;
+	dv_pico_iobank0.gpio[5].ctrl = DV_FUNCSEL_UART;
 
-	/* Select alt output/open drain/50 MHz on PA9
+	/* Set up the baud-rate generator. This requires a write to LCR_H to activate; we do that later
 	*/
-	int cr = 9 / 8;
-	int shift = (9 % 8) * 4;
-	dv_u32_t mask = 0xf << shift;
-	dv_u32_t val = DV_GPIO_ALT_PP_50 << shift;
-	dv_gpio_a.cr[cr] = (dv_gpio_a.cr[cr] & ~mask) | val;
+	dv_pico_uart1.ibrd = ibrd;
+	dv_pico_uart1.fbrd = fbrd;
 
-	/* Select input/pullup on PA10
+	/* Write the line config to LCR_H
 	*/
-	cr = 10 / 8;
-	shift = (10 % 8) * 4;
-	mask = 0xf << shift;
-	val = DV_GPIO_IN_PUD << shift;
-	dv_gpio_a.cr[cr] = (dv_gpio_a.cr[cr] & ~mask) | val;
-	dv_gpio_a.odr |= (0x1<<10);
+	dv_pico_uart1.lcr_h = lcr;
 
-	
-
-
-	/* Enable the UART but keep the transmitter and receiver off.
+	/* Enable the UART, enable rx and tx. Turn off all flow control etc.
 	*/
-	dv_uart1.cr[0] = DV_UART_UE;
-
-	/* Turn off all other modes (LIN, flow control, DMA etc.).
-	*/
-	dv_uart1.cr[1] = 0;
-	dv_uart1.cr[2] = 0;
-	dv_uart1.gtpr = 0;
-
-	/* Program the baud rate
-	*/
-	dv_uart1.brr = div;
-
-	/* If 9 bits needed, set the M flag
-	*/
-	if ( bits == 9 )
-		dv_uart1.cr[0] |= DV_UART_M;
-
-	/* If parity needed, set the PCE flag, and the PS flag for odd parity
-	*/
-	if ( fmt[1] == 'E' )
-		dv_uart1.cr[0] |= DV_UART_PCE;
-	else
-	if ( fmt[1] == 'O' )
-		dv_uart1.cr[0] |= (DV_UART_PCE | DV_UART_PS);
-
-	/* If 2 stop bits needed, select it. 1 stop bit is the 0 value already written.
-	*/
-	if ( fmt[2] == '2' )
-		dv_uart1.cr[1] |= DV_UART_STOP_2;
-
-	/* Finally, enable the transmitter and receiver
-	*/
-	dv_uart1.cr[0] |= (DV_UART_TE | DV_UART_RE);
+	dv_pico_uart1.cr = DV_UART_UARTEN | DV_UART_RXE | DV_UART_TXE;
 
 	return 0;
 }
-#else
-extern volatile unsigned char floom;
-#endif
