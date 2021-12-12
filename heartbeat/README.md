@@ -59,6 +59,11 @@ Add uart support - 115200/8N1. Send a character on each beat. Echo characters th
 
 IMPORTANT: you have to initialise IOBANK0 before initialising the uart.
 
+## 6th iteration
+
+Add interrupt support; software trigger when '!' is received from uart. Hint: never forget to write the
+address of the vector table into vtor ;-)
+
 # License, disclaimer etc.
 
 Copyright David Haworth

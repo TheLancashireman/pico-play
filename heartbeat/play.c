@@ -51,10 +51,17 @@ void play_putc(int);
 void dv_irq_ext0(void);
 void putstr(char *);
 
+
+extern const unsigned vectors[];
+
 /* Entry point
 */
 void dv_reset(void)
 {
+	/* Set up the vector table
+	*/
+	dv_mscr.vtor = (dv_u32_t)&vectors[0];
+
 #if 1
 	dv_init_clock();
 #if USE_PLL
@@ -78,10 +85,8 @@ void dv_reset(void)
 
 	putstr("\nHello universe!\n");
 
-#if 0
-	dv_nvic_setprio(0, 12);
+	dv_nvic_setprio(0, 0xc0);
 	dv_nvic_enableirq(0);
-#endif
 
 #if USE_PLL
 	delay_factor = 16000;

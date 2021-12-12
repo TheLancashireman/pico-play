@@ -87,7 +87,7 @@ struct dv_cortexmscr_s
 	dv_reg32_t id_isar7;	/* ED7C: RO - not v6m */
 };
 
-#define DV_CORTEXMCR_BASE		0xe000ed00
+#define DV_CORTEXMSCR_BASE		0xe000ed00
 #define dv_mscr					((dv_cortexmscr_t *)DV_CORTEXMSCR_BASE)[0]
 
 /* CPACR and STIR are well separated from the SCR

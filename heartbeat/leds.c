@@ -116,10 +116,11 @@ void delay(int ms)
 			int c = dv_uart0_getc();
 			play_putc(c);
 
-#if 0
 			if ( c == '!' )
+			{
+				play_putc('X');
 				dv_nvic_triggerirq(0);
-#endif
+			}
 		}
 	}
 
