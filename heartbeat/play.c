@@ -68,6 +68,9 @@ void dv_reset(void)
 	else
 		fail();
 
+	init_led();		/* Must come before initializing uart */
+	led_off();
+
 	dv_nvic_init();
 
 	if ( dv_uart0_init(115200, "8N1") != 0 )
@@ -78,8 +81,6 @@ void dv_reset(void)
 	dv_nvic_enableirq(0);
 #endif
 
-	init_led();
-	led_off();
 #if USE_PLL
 	delay_factor = 16000;
 #else
@@ -90,6 +91,7 @@ void dv_reset(void)
 	{
 		for (;;)
 		{
+			play_putc('*');
 			led_on();
 			delay(500);
 			led_off();

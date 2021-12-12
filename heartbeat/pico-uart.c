@@ -119,7 +119,6 @@ int dv_uart0_init(unsigned baud, char *fmt)
 
 	dv_u32_t fbrd = ((bdiv & 0x7f) + 1) / 2;
 #else
-#if 0
 	int bri;
 	for ( bri = 0; bri < NBAUD; bri++ )
 	{
@@ -132,10 +131,6 @@ int dv_uart0_init(unsigned baud, char *fmt)
 
 	dv_u32_t ibrd = br_table[bri].ibrd;
 	dv_u32_t fbrd = br_table[bri].fbrd;
-#else
-	dv_u32_t ibrd = 6;
-	dv_u32_t fbrd = 33;
-#endif
 #endif
 
 	if ( fmt[0] < '5' || fmt[0] > '8' )

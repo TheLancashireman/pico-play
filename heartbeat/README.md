@@ -53,6 +53,12 @@ to approximately the speed it was in the 1st iteration.
 Switch to using systick as timer. The "implementation-defined" clock frequency is 1 MHz, according to the
 ref. manual. Beat rate is now a reasonably accurate 72 beats per minute.
 
+## 5th iteration
+
+Add uart support - 115200/8N1. Send a character on each beat. Echo characters that are received.
+
+IMPORTANT: you have to initialise IOBANK0 before initialising the uart.
+
 # License, disclaimer etc.
 
 Copyright David Haworth
