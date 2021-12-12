@@ -76,6 +76,8 @@ void dv_reset(void)
 	if ( dv_uart0_init(115200, "8N1") != 0 )
 		fail();
 
+	putstr("\nHello universe!\n");
+
 #if 0
 	dv_nvic_setprio(0, 12);
 	dv_nvic_enableirq(0);
