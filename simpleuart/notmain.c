@@ -107,7 +107,7 @@ unsigned int GET32 ( unsigned int );
 #define STK_RVR 0xE000E014
 #define STK_CVR 0xE000E018
 
-static unsigned int uart_recv ( void )
+unsigned int uart_recv ( void )
 {
     while(1)
     {
@@ -116,7 +116,7 @@ static unsigned int uart_recv ( void )
     return(GET32(UART0_BASE_UARTDR_RW));
 }
 
-static void uart_send ( unsigned int x )
+void uart_send ( unsigned int x )
 {
     while(1)
     {
@@ -157,7 +157,7 @@ static void hexstring ( unsigned int d )
     uart_send(0x0A);
 }
 
-static void clock_init ( void )
+void clock_init ( void )
 {
     PUT32(CLK_SYS_RESUS_CTRL_RW,0);
     //PUT32(CLK_REF_CTRL_RW,0);
@@ -173,12 +173,8 @@ static void clock_init ( void )
     PUT32(CLK_SYS_CTRL_RW,0); //reset/clk_ref
 }
 
-int notmain ( void )
+void uart_init(void)
 {
-    unsigned int ra;
-
-    clock_init();
-
     PUT32(CLK_PERI_CTRL_RW,(1<<11)|(4<<5));
 
     PUT32(RESETS_RESET_CLR,(1<<5)); //IO_BANK0
@@ -206,6 +202,14 @@ int notmain ( void )
 
     PUT32(IO_BANK0_GPIO0_CTRL_RW,2);  //UART
     PUT32(IO_BANK0_GPIO1_CTRL_RW,2);  //UART
+}
+
+int notmain ( void )
+{
+    unsigned int ra;
+
+    clock_init();
+	uart_init();
 
     for(ra=0;ra<100;)
     {
