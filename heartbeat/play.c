@@ -224,9 +224,17 @@ void dv_init_pll(void)
 	dv_pico_clocks.sys.ctrl = DV_CLKSRC_SYS_AUX | DV_CLKSRC_SYS_AUX_PLL;	/* Switch to the aux clock */
 }
 
+/* Writing to uart at interrupt level is normally dangerous. The interrupt could happen in the
+ * gap between reading the fifo status and writing to the fifo, in the low-level putc() function.
+ * If it happens, the ISR could fill the FIFO and cause the background thread to write to a full FIFO,
+ * which would result in a missed character somewhere.
+ *
+ * In this program the interrupt that's expected (ext0) is software-triggered, so the race condition cannot happen.
+ * The remaining interrupts and exceptions don't return.
+*/
 void dv_irq_ext0(void)
 {
-	putstr("dv_irq_ext0()\n");
+	putstr("\ndv_irq_ext0()\n");
 }
 
 /* Below this line are stub functions to satisfy the vector addresses
