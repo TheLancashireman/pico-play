@@ -121,6 +121,16 @@ void delay(int ms)
 				play_putc('X');
 				dv_nvic_triggerirq(0);
 			}
+			if ( c == '?' )
+			{
+				play_putc('Y');
+				dv_nvic_triggerirq(21);
+			}
+			if ( c == '$' )
+			{
+				play_putc('Z');
+				dv_nvic_triggerirq(31);
+			}
 		}
 	}
 
