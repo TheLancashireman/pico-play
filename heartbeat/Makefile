@@ -42,6 +42,8 @@ CC_OPT		+= -g
 
 LD_OPT		+= --thumb-entry=$(DV_ENTRY)
 LD_OPT		+= -T $(DV_LDSCRIPT)
+LD_OPT		+= -L /data1/projects/OtherPeople/libaeabi-cortexm0
+LD_OPT		+= -laeabi-cortexm0
 
 VPATH		+= .
 
