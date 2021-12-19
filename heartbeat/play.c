@@ -50,6 +50,7 @@ void dv_init_pll();
 void play_putc(int);
 void dv_irq_ext0(void);
 void putstr(char *);
+char *num_to_str(unsigned x);
 
 
 extern const unsigned vectors[];
@@ -85,8 +86,20 @@ void dv_reset(void)
 
 	putstr("\nHello universe!\n");
 
+	/* Some quick testing of num_to_str()
+	*/
+	putstr("\n0 ... ");
+	putstr(num_to_str(0));
+	putstr("\n42 ... ");
+	putstr(num_to_str(42));
+	putstr("\n1234567890 ... ");
+	putstr(num_to_str(1234567890));
+	putstr("\n");
+
 	dv_nvic_setprio(0, 0xc0);
 	dv_nvic_enableirq(0);
+	dv_nvic_enableirq(21);
+	dv_nvic_enableirq(31);
 
 #if USE_PLL
 	delay_factor = 16000;
@@ -119,6 +132,31 @@ void dv_reset(void)
 		led_off();
 		delay(700);
 	}
+}
+
+char buf[16];
+
+char *num_to_str(unsigned x)
+{
+	char *p = &buf[15];
+	*p = '\0';
+
+	if ( x == 0 )
+	{
+		p--;
+		*p = '0';
+	}
+	else
+	{
+		while ( x != 0 )
+		{
+			p--;
+			*p = x%10 + '0';
+			x = x/10;
+		}
+	}
+
+	return p;
 }
 
 void pass(void)
@@ -232,9 +270,18 @@ void dv_init_pll(void)
  * In this program the interrupt that's expected (ext0) is software-triggered, so the race condition cannot happen.
  * The remaining interrupts and exceptions don't return.
 */
+static inline dv_u32_t dv_get_ipsr(void)
+{
+	unsigned ipsr;
+	__asm__ volatile("mrs %[reg], IPSR" : [reg] "=r" (ipsr) : : );
+	return ipsr;
+}
+
 void dv_irq_ext0(void)
 {
-	putstr("\ndv_irq_ext0()\n");
+	putstr("\ndv_irq_ext0() - ipsr = ");
+	putstr(num_to_str(dv_get_ipsr()));
+	putstr("\n");
 }
 
 /* Below this line are stub functions to satisfy the vector addresses
@@ -270,8 +317,9 @@ void dv_systickirq(void)
 
 void dv_irq(void)
 {
-	putstr("dv_irq()\n");
-	for (;;)	{ }
+	putstr("\ndv_irq() - ipsr = ");
+	putstr(num_to_str(dv_get_ipsr()));
+	putstr("\n");
 }
 
 void dv_unknowntrap(void)
@@ -280,3 +328,10 @@ void dv_unknowntrap(void)
 	for (;;)	{ }
 }
 
+/* Report error. Also prevents ld from pulling in crt.o, which in turn pulls in main()
+*/
+void __aeabi_idiv0(void)
+{
+	putstr("division by zero\n");
+	for (;;)	{ }
+}
