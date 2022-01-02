@@ -10,7 +10,7 @@ hardware a bit better.
 
 ## heartbeat
 
-An blink/uart/interrupt project that was developed iteratively.
+A blink/uart/interrupt project that was developed iteratively.
 
 ## simpleuart
 
@@ -20,7 +20,7 @@ https://github.com/dwelch67/raspberrypi-pico
 
 I copied it here as part of the process of finding out why the uart part of heartbeat didn't work. There
 are minor modifications:
-* Load directly intp RAM, like heartbeat.
+* Load directly into RAM, like heartbeat.
 * Split the uart initialisation into a function that can be called from elsewhere.
 
 ## License, disclaimer etc.
